@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { PROMPTS } from '@/lib/prompts'
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '')
-
 export async function POST(req: NextRequest) {
+  const apiKey = process.env.GOOGLE_API_KEY
+  if (!apiKey) {
+    console.error('GOOGLE_API_KEY is not set')
+    return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey)
+
   const { tool, inputs } = await req.json()
 
   const systemPrompt = PROMPTS[tool as keyof typeof PROMPTS]
@@ -51,6 +57,7 @@ export async function POST(req: NextRequest) {
         }
         controller.close()
       } catch (error) {
+        console.error('Gemini error:', JSON.stringify(error))
         controller.error(error)
       }
     },
