@@ -8,24 +8,24 @@ export const maxDuration = 60
 export async function POST(req: NextRequest) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
+    if (!apiKey) {
+      console.error('ANTHROPIC_API_KEY not set')
+      return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
+    }
 
     const body = await req.json()
     const { tool, inputs, format } = body
 
     if (!tool || !inputs) return NextResponse.json({ error: 'Missing tool or inputs' }, { status: 400 })
 
-    // For tailoredCV with a format choice, use the format-specific prompt
     let systemPrompt: string
     if (tool === 'tailoredCV' && format && FORMAT_PROMPTS[format]) {
       systemPrompt = FORMAT_PROMPTS[format]
     } else {
       systemPrompt = PROMPTS[tool]
     }
-
     if (!systemPrompt) return NextResponse.json({ error: 'Unknown tool' }, { status: 400 })
 
-    // Build user message per tool
     let userMessage = ''
     if (tool === 'masterCV') {
       userMessage = `CANDIDATE CAREER DOCUMENTS:\n${inputs.docs}`
@@ -42,12 +42,21 @@ export async function POST(req: NextRequest) {
     }
 
     const anthropic = new Anthropic({ apiKey })
-    const stream = await anthropic.messages.stream({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 8000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }],
-    })
+
+    // Test the connection before streaming — catches bad API keys immediately
+    let stream
+    try {
+      stream = await anthropic.messages.stream({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMessage }],
+      })
+    } catch (apiErr: unknown) {
+      const msg = apiErr instanceof Error ? apiErr.message : 'Anthropic API error'
+      console.error('Anthropic connection error:', msg)
+      return NextResponse.json({ error: `API error: ${msg}` }, { status: 502 })
+    }
 
     const encoder = new TextEncoder()
     const readable = new ReadableStream({
@@ -58,8 +67,9 @@ export async function POST(req: NextRequest) {
               controller.enqueue(encoder.encode(chunk.delta.text))
             }
           }
-        } catch (err) {
-          console.error('Streaming error:', err)
+        } catch (streamErr) {
+          console.error('Streaming error:', streamErr)
+          controller.enqueue(encoder.encode('\n\n[Generation error — please try again]'))
         } finally {
           controller.close()
         }
@@ -67,11 +77,14 @@ export async function POST(req: NextRequest) {
     })
 
     return new Response(readable, {
-      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Content-Type-Options': 'nosniff' },
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'X-Content-Type-Options': 'nosniff',
+      },
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error('Generate error:', message)
-    return NextResponse.json({ error: 'Generation failed. Please try again.' }, { status: 500 })
+    return NextResponse.json({ error: `Generation failed: ${message}` }, { status: 500 })
   }
 }
