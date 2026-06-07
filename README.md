@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CV Suite — Free Version (The Cache Group)
 
-## Getting Started
+AI-powered career tools using Google Gemini. No user accounts required — users just visit the URL.
 
-First, run the development server:
+## Tools included
+- Tailored CV
+- Cover Letter
+- Interview Prep (simplified — 5 behavioural Q&As + questions to ask)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Setup
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 1. Get a free Google API key
+Go to https://aistudio.google.com → API Keys → Create API key
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. Deploy to Vercel
+1. Upload this folder to a GitHub repo (private)
+2. Go to vercel.com → Add New Project → import your repo
+3. Add environment variable: `GOOGLE_API_KEY` = your key
+4. Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Turn off Vercel login protection (IMPORTANT)
+By default, Vercel requires visitors to log in. Turn this off:
+- Go to your project in Vercel → Settings → Deployment Protection
+- Set to **None** (or turn off Vercel Authentication)
+- Save and redeploy
 
-## Learn More
+After this, anyone with the link can use the tool — no account needed.
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Share the URL
+Vercel gives you a URL like `cv-suite-free.vercel.app`. Share it freely.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Rate limits (free Google tier)
+- Gemini 2.0 Flash: ~1,500 requests/day, 15 requests/minute
+- Sufficient for moderate use. If you hit limits, upgrade Google account to paid tier.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Logo
+Replace the "C" placeholder in `app/page.tsx` with your actual logo image.
+Add your logo to the `public/` folder and use `<img src="/logo.png" />`.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+- Nothing users enter is stored — all processing is stateless
+- Output downloads to the user's device as a .txt file

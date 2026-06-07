@@ -1,72 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { PROMPTS } from '@/lib/prompts'
+import Anthropic from '@anthropic-ai/sdk'
+import { PROMPTS, FORMAT_PROMPTS } from '@/lib/prompts'
+
+export const runtime = 'nodejs'
+export const maxDuration = 120
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.GOOGLE_API_KEY
-  if (!apiKey) {
-    console.error('GOOGLE_API_KEY is not set')
-    return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
-  }
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey) return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
 
-  const genAI = new GoogleGenerativeAI(apiKey)
+    const body = await req.json()
+    const { tool, inputs, format } = body
 
-  const { tool, inputs } = await req.json()
+    if (!tool || !inputs) return NextResponse.json({ error: 'Missing tool or inputs' }, { status: 400 })
 
-  const systemPrompt = PROMPTS[tool as keyof typeof PROMPTS]
-  if (!systemPrompt) {
-    return NextResponse.json({ error: 'Invalid tool selected' }, { status: 400 })
-  }
+    // For tailoredCV with a format choice, use the format-specific prompt
+    let systemPrompt: string
+    if (tool === 'tailoredCV' && format && FORMAT_PROMPTS[format]) {
+      systemPrompt = FORMAT_PROMPTS[format]
+    } else {
+      systemPrompt = PROMPTS[tool]
+    }
 
-  let userMessage = ''
+    if (!systemPrompt) return NextResponse.json({ error: 'Unknown tool' }, { status: 400 })
 
-  switch (tool) {
-    case 'baseCV':
-      userMessage = `Please consolidate the following career documents into a master CV.\n\n${inputs.documents}`
-      break
-    case 'tailoredCV':
-      userMessage = `Please tailor this CV to the job description below.\n\nBASE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jobDescription}${inputs.notes ? `\n\nADDITIONAL NOTES:\n${inputs.notes}` : ''}`
-      break
-    case 'intro90Generic':
-      userMessage = `Please write a 90-second professional introduction based on this CV.\n\nCV:\n${inputs.cv}`
-      break
-    case 'intro90RoleFocused':
-      userMessage = `Please write a role-focused 90-second introduction.\n\nCV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jobDescription}\n\nCOMPANY NAME: ${inputs.companyName}`
-      break
-    case 'interviewPrep':
-      userMessage = `Please produce a full interview preparation pack.\n\nCV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jobDescription}\n\nCOMPANY NAME: ${inputs.companyName}${inputs.interviewers ? `\n\nINTERVIEWERS:\n${inputs.interviewers}` : ''}${inputs.additionalContext ? `\n\nADDITIONAL CONTEXT:\n${inputs.additionalContext}` : ''}`
-      break
-  }
+    // Build user message per tool
+    let userMessage = ''
+    if (tool === 'masterCV') {
+      userMessage = `CANDIDATE CAREER DOCUMENTS:\n${inputs.docs}`
+    } else if (tool === 'tailoredCV') {
+      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}`
+    } else if (tool === 'coverLetter') {
+      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || ''}\nROLE TITLE: ${inputs.role || ''}`
+    } else if (tool === 'intro90General') {
+      userMessage = `CANDIDATE CV:\n${inputs.cv}`
+    } else if (tool === 'intro90Role') {
+      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || ''}`
+    } else if (tool === 'deepInterviewPrep') {
+      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || ''}\n\nINTERVIEWER NAMES AND TITLES:\n${inputs.interviewers || 'Not provided'}`
+    }
 
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
-    systemInstruction: systemPrompt,
-  })
+    const anthropic = new Anthropic({ apiKey })
+    const stream = await anthropic.messages.stream({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+    })
 
-  const encoder = new TextEncoder()
-
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        const result = await model.generateContentStream(userMessage)
-        for await (const chunk of result.stream) {
-          const text = chunk.text()
-          if (text) {
-            controller.enqueue(encoder.encode(text))
+    const encoder = new TextEncoder()
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of stream) {
+            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+              controller.enqueue(encoder.encode(chunk.delta.text))
+            }
           }
+        } catch (err) {
+          console.error('Streaming error:', err)
+        } finally {
+          controller.close()
         }
-        controller.close()
-      } catch (error) {
-        console.error('Gemini error:', JSON.stringify(error))
-        controller.error(error)
-      }
-    },
-  })
+      },
+    })
 
-  return new NextResponse(stream, {
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Transfer-Encoding': 'chunked',
-    },
-  })
+    return new Response(readable, {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Content-Type-Options': 'nosniff' },
+    })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    console.error('Generate error:', message)
+    return NextResponse.json({ error: 'Generation failed. Please try again.' }, { status: 500 })
+  }
 }
