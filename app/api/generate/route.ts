@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { PROMPTS, FORMAT_PROMPTS } from '@/lib/prompts'
 
 export const runtime = 'nodejs'
-export const maxDuration = 120
+export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
   try {
