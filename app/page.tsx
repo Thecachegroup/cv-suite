@@ -192,28 +192,117 @@ function TextField({ id, label, value, onChange, onClear, placeholder, rows }: {
 }
 
 // ── Format buttons ─────────────────────────────────────────────────────────────
+// ── Mini layout thumbnails ────────────────────────────────────────────────────
+function PreviewClassic() {
+  return (
+    <div style={{ width: '100%', height: '72px', background: '#F5EFF1', borderRadius: '4px', padding: '6px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+      <div style={{ height: '5px', width: '100%', background: '#932B46', borderRadius: '2px' }} />
+      <div style={{ height: '3px', width: '70%', background: '#C8A0AA', borderRadius: '2px' }} />
+      <div style={{ height: '3px', width: '45%', background: '#DEDAD8', borderRadius: '2px' }} />
+      <div style={{ height: '9px', width: '100%', background: '#EDE5E7', borderRadius: '2px', marginTop: '2px' }} />
+      <div style={{ height: '3px', width: '85%', background: '#DEDAD8', borderRadius: '2px' }} />
+      <div style={{ height: '3px', width: '65%', background: '#DEDAD8', borderRadius: '2px' }} />
+      <div style={{ height: '9px', width: '100%', background: '#EDE5E7', borderRadius: '2px', marginTop: '2px' }} />
+    </div>
+  )
+}
+
+function PreviewHybrid() {
+  return (
+    <div style={{ width: '100%', height: '72px', background: '#F5EFF1', borderRadius: '4px', padding: '6px', display: 'flex', flexDirection: 'column', gap: '0' }}>
+      <div style={{ height: '5px', width: '100%', background: '#932B46', borderRadius: '2px', marginBottom: '5px' }} />
+      <div style={{ display: 'flex', gap: '4px', flex: 1 }}>
+        <div style={{ width: '36%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+          <div style={{ height: '8px', width: '100%', background: '#C8A0AA', borderRadius: '2px' }} />
+          <div style={{ height: '3px', width: '100%', background: '#DEDAD8', borderRadius: '2px' }} />
+          <div style={{ height: '8px', width: '100%', background: '#C8A0AA', borderRadius: '2px' }} />
+          <div style={{ height: '3px', width: '100%', background: '#DEDAD8', borderRadius: '2px' }} />
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+          <div style={{ height: '3px', width: '100%', background: '#DEDAD8', borderRadius: '2px' }} />
+          <div style={{ height: '3px', width: '85%', background: '#DEDAD8', borderRadius: '2px' }} />
+          <div style={{ height: '3px', width: '100%', background: '#DEDAD8', borderRadius: '2px' }} />
+          <div style={{ height: '3px', width: '70%', background: '#DEDAD8', borderRadius: '2px' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PreviewExecutive() {
+  return (
+    <div style={{ width: '100%', height: '72px', background: '#F5EFF1', borderRadius: '4px', padding: '6px', display: 'flex', flexDirection: 'row', gap: '5px' }}>
+      <div style={{ width: '30%', background: '#932B46', borderRadius: '3px', padding: '5px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ height: '4px', width: '100%', background: 'rgba(255,255,255,0.5)', borderRadius: '2px' }} />
+        <div style={{ height: '4px', width: '80%', background: 'rgba(255,255,255,0.3)', borderRadius: '2px' }} />
+        <div style={{ height: '4px', width: '100%', background: 'rgba(255,255,255,0.5)', borderRadius: '2px' }} />
+        <div style={{ height: '4px', width: '70%', background: 'rgba(255,255,255,0.3)', borderRadius: '2px' }} />
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px', paddingTop: '3px' }}>
+        <div style={{ height: '3px', width: '100%', background: '#AAA', borderRadius: '2px' }} />
+        <div style={{ height: '3px', width: '85%', background: '#DEDAD8', borderRadius: '2px' }} />
+        <div style={{ height: '3px', width: '100%', background: '#AAA', borderRadius: '2px' }} />
+        <div style={{ height: '3px', width: '90%', background: '#DEDAD8', borderRadius: '2px' }} />
+        <div style={{ height: '3px', width: '75%', background: '#DEDAD8', borderRadius: '2px' }} />
+        <div style={{ height: '3px', width: '100%', background: '#AAA', borderRadius: '2px' }} />
+      </div>
+    </div>
+  )
+}
+
+function PreviewModern() {
+  return (
+    <div style={{ width: '100%', height: '72px', background: '#F5EFF1', borderRadius: '4px', padding: '6px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+      <div style={{ height: '4px', width: '28%', background: '#932B46', borderRadius: '2px' }} />
+      <div style={{ height: '6px', width: '60%', background: '#333', borderRadius: '2px', margin: '2px 0' }} />
+      <div style={{ height: '1px', width: '100%', background: '#DEDAD8' }} />
+      <div style={{ height: '3px', width: '90%', background: '#DEDAD8', borderRadius: '2px', marginTop: '2px' }} />
+      <div style={{ height: '3px', width: '68%', background: '#DEDAD8', borderRadius: '2px' }} />
+      <div style={{ height: '1px', width: '100%', background: '#DEDAD8', marginTop: '2px' }} />
+      <div style={{ height: '3px', width: '90%', background: '#DEDAD8', borderRadius: '2px', marginTop: '2px' }} />
+      <div style={{ height: '3px', width: '68%', background: '#DEDAD8', borderRadius: '2px' }} />
+    </div>
+  )
+}
+
+const FORMAT_PREVIEWS: Record<CVFormat, () => JSX.Element> = {
+  classic:   PreviewClassic,
+  hybrid:    PreviewHybrid,
+  executive: PreviewExecutive,
+  modern:    PreviewModern,
+}
+
 function FormatBar({ active, onSelect, loading }: { active: CVFormat | null; onSelect: (f: CVFormat) => void; loading: boolean }) {
   return (
     <div style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1px solid #E8DDE0' }}>
-      <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6B5B5F', marginBottom: '10px' }}>
+      <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6B5B5F', marginBottom: '12px' }}>
         Reformat this CV
       </div>
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        {CV_FORMATS.map(f => (
-          <button key={f.id} onClick={() => onSelect(f.id)} disabled={loading}
-            title={f.tag}
-            style={{
-              padding: '9px 16px', borderRadius: '8px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: '13px', fontWeight: active === f.id ? 700 : 500,
-              background: active === f.id ? '#932B46' : '#F0E8EA',
-              color: active === f.id ? '#FFF' : '#6B5B5F',
-              transition: 'all 0.15s',
-            }}>
-            {f.label}
-          </button>
-        ))}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+        {CV_FORMATS.map(f => {
+          const Preview = FORMAT_PREVIEWS[f.id]
+          const isActive = active === f.id
+          return (
+            <button key={f.id} onClick={() => onSelect(f.id)} disabled={loading}
+              style={{
+                padding: '10px', borderRadius: '10px', cursor: loading ? 'not-allowed' : 'pointer',
+                border: `2px solid ${isActive ? '#932B46' : '#E8DDE0'}`,
+                background: isActive ? '#FDF5F7' : '#FFF',
+                textAlign: 'center', transition: 'all 0.15s',
+                boxShadow: isActive ? '0 2px 10px rgba(147,43,70,0.15)' : 'none',
+              }}>
+              <Preview />
+              <div style={{ fontSize: '12px', fontWeight: isActive ? 700 : 500, color: isActive ? '#932B46' : '#1A1A1A', marginTop: '8px', lineHeight: '1.3' }}>
+                {f.label}
+              </div>
+              <div style={{ fontSize: '10px', color: '#9E8A8E', marginTop: '2px' }}>
+                {f.tag}
+              </div>
+            </button>
+          )
+        })}
       </div>
-      <div style={{ fontSize: '11px', color: '#9E8A8E', marginTop: '8px' }}>
+      <div style={{ fontSize: '11px', color: '#9E8A8E', marginTop: '10px' }}>
         Same content — different layout. Download whichever version you prefer.
       </div>
     </div>
@@ -237,6 +326,7 @@ export default function Home() {
   const [output, setOutput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [warning, setWarning] = useState('')
   const [copied, setCopied] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [activeFormat, setActiveFormat] = useState<CVFormat | null>(null)
@@ -247,7 +337,7 @@ export default function Home() {
 
   const switchTab = (tab: Tool) => {
     if (abortRef.current) { abortRef.current.abort(); abortRef.current = null }
-    setActiveTab(tab); setOutput(''); setError(''); setLoading(false); setActiveFormat(null)
+    setActiveTab(tab); setOutput(''); setError(''); setWarning(''); setLoading(false); setActiveFormat(null)
   }
 
   const getInputs = () => {
@@ -261,16 +351,23 @@ export default function Home() {
     }
   }
 
-  const validate = () => {
+  const hardValidate = () => {
     if (activeTab === 'masterCV' && !docs.trim()) return 'Please paste your career documents.'
     if (activeTab !== 'masterCV' && !cv.trim()) return 'Please enter your CV.'
     if (['tailoredCV', 'coverLetter', 'intro90Role', 'deepInterviewPrep'].includes(activeTab) && !jd.trim()) return 'Please enter the job description.'
-    if (['coverLetter', 'intro90Role', 'deepInterviewPrep'].includes(activeTab) && !company.trim()) return 'Please enter the company name.'
     return ''
   }
 
-  const runGenerate = async (format?: CVFormat) => {
-    const err = validate(); if (err) { setError(err); return }
+  const softValidate = () => {
+    if (['coverLetter', 'intro90Role', 'deepInterviewPrep'].includes(activeTab) && !company.trim())
+      return 'No company name entered — the output may be less targeted.'
+    return ''
+  }
+
+  const runGenerate = async (format?: CVFormat, skipWarning = false) => {
+    const hard = hardValidate(); if (hard) { setError(hard); setWarning(''); return }
+    const soft = softValidate(); if (soft && !skipWarning) { setWarning(soft); return }
+    setWarning('')
     if (abortRef.current) abortRef.current.abort()
     const controller = new AbortController(); abortRef.current = controller
     setError(''); setOutput(''); setLoading(true)
@@ -411,6 +508,16 @@ export default function Home() {
 
             {error && (
               <div style={{ padding: '10px 14px', background: '#FDF0F2', border: '1px solid #F5C5CE', borderRadius: '8px', fontSize: '13px', color: '#932B46', marginBottom: '16px' }}>{error}</div>
+            )}
+
+            {warning && (
+              <div style={{ padding: '12px 14px', background: '#FFF8E8', border: '1px solid #F5D87A', borderRadius: '8px', fontSize: '13px', color: '#7A5C00', marginBottom: '12px' }}>
+                <div style={{ marginBottom: '8px' }}>⚠️ {warning}</div>
+                <button onClick={() => runGenerate(undefined, true)}
+                  style={{ padding: '7px 16px', background: '#7A5C00', color: '#FFF', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                  Generate Anyway
+                </button>
+              </div>
             )}
 
             <button onClick={() => runGenerate()} disabled={loading}
