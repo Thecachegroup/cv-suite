@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { PROMPTS, FORMAT_PROMPTS } from '@/lib/prompts'
+import { FORMAT_PROMPTS, COVER_TONE_PROMPTS, PROMPT_MASTER_CV, PROMPT_INTRO_GENERAL, PROMPT_INTRO_ROLE, PROMPT_DEEP_INTERVIEW } from '@/lib/prompts'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -8,23 +8,31 @@ export const maxDuration = 60
 export async function POST(req: NextRequest) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) {
-      console.error('ANTHROPIC_API_KEY not set')
-      return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
-    }
+    if (!apiKey) return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
 
     const body = await req.json()
-    const { tool, inputs, format } = body
+    const { tool, inputs, format = 'classic', tone = 'professional', length = '' } = body
 
     if (!tool || !inputs) return NextResponse.json({ error: 'Missing tool or inputs' }, { status: 400 })
 
     let systemPrompt: string
-    if (tool === 'tailoredCV' && format && FORMAT_PROMPTS[format]) {
-      systemPrompt = FORMAT_PROMPTS[format]
+
+    if (tool === 'tailoredCV') {
+      const fn = FORMAT_PROMPTS[format] || FORMAT_PROMPTS.classic
+      systemPrompt = fn(length)
+    } else if (tool === 'masterCV') {
+      systemPrompt = typeof PROMPT_MASTER_CV === 'function' ? PROMPT_MASTER_CV : PROMPT_MASTER_CV
+    } else if (tool === 'coverLetter') {
+      systemPrompt = COVER_TONE_PROMPTS[tone] || COVER_TONE_PROMPTS.professional
+    } else if (tool === 'intro90General') {
+      systemPrompt = PROMPT_INTRO_GENERAL
+    } else if (tool === 'intro90Role') {
+      systemPrompt = PROMPT_INTRO_ROLE
+    } else if (tool === 'deepInterviewPrep') {
+      systemPrompt = PROMPT_DEEP_INTERVIEW
     } else {
-      systemPrompt = PROMPTS[tool]
+      return NextResponse.json({ error: 'Unknown tool' }, { status: 400 })
     }
-    if (!systemPrompt) return NextResponse.json({ error: 'Unknown tool' }, { status: 400 })
 
     let userMessage = ''
     if (tool === 'masterCV') {
@@ -32,23 +40,22 @@ export async function POST(req: NextRequest) {
     } else if (tool === 'tailoredCV') {
       userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}`
     } else if (tool === 'coverLetter') {
-      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || ''}\nROLE TITLE: ${inputs.role || ''}`
+      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || 'Not provided'}\nROLE TITLE: ${inputs.role || 'Not provided'}`
     } else if (tool === 'intro90General') {
       userMessage = `CANDIDATE CV:\n${inputs.cv}`
     } else if (tool === 'intro90Role') {
-      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || ''}`
+      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || 'Not provided'}`
     } else if (tool === 'deepInterviewPrep') {
-      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || ''}\n\nINTERVIEWER NAMES AND TITLES:\n${inputs.interviewers || 'Not provided'}`
+      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || 'Not provided'}\n\nINTERVIEWER NAMES AND TITLES:\n${inputs.interviewers || 'Not provided'}`
     }
 
     const anthropic = new Anthropic({ apiKey })
 
-    // Test the connection before streaming — catches bad API keys immediately
     let stream
     try {
       stream = await anthropic.messages.stream({
         model: 'claude-sonnet-4-6',
-        max_tokens: 4096,
+        max_tokens: 8000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userMessage }],
       })
@@ -77,10 +84,7 @@ export async function POST(req: NextRequest) {
     })
 
     return new Response(readable, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'X-Content-Type-Options': 'nosniff',
-      },
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Content-Type-Options': 'nosniff' },
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
