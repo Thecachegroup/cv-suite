@@ -167,7 +167,7 @@ function DragArea({ id, label, value, onChange, onClear, placeholder, rows=8 }: 
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'5px 11px 7px', borderTop:'1px solid #EDE5E7' }}>
           <span style={{ fontSize:'11px', color:'#9E8A8E' }}>{extracting?'Reading file…':'Drop .txt, .docx, or .pdf — or paste text'}</span>
           <button type="button" onClick={()=>inputRef.current?.click()} disabled={extracting}
-            style={{ fontSize:'11px', color:'#932B46', background:'none', border:'none', cursor:'pointer', padding:'2px 6px', fontWeight:600, fontFamily:'inherit' }}>Browse</button>
+            style={{ fontSize:'11px', color:'#fff', background:'#932B46', border:'none', borderRadius:'5px', cursor:'pointer', padding:'4px 12px', fontWeight:600, fontFamily:'inherit' }}>Browse Files</button>
         </div>
         <input ref={inputRef} type="file" accept=".txt,.docx,.pdf" onChange={onFileChange} style={{ display:'none' }} />
       </div>
@@ -290,6 +290,7 @@ export default function Home() {
   const outputRef = useRef<HTMLDivElement>(null)
 
   const wordCount = output ? wc(output) : 0
+  const estPages = output ? Math.max(1, Math.round(wordCount / 450)) : 0
 
   if (!unlocked) return <AccessGate onUnlock={() => setUnlocked(true)} />
 
@@ -573,7 +574,7 @@ export default function Home() {
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'14px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
                 <h2 style={{ fontSize:'12px', fontWeight:700, color:'#932B46', letterSpacing:'.08em', textTransform:'uppercase', margin:0 }}>Output</h2>
-                {output && <span style={{ fontSize:'11px', color:'#9E8A8E' }}>{wordCount.toLocaleString()} words</span>}
+                {output && <span style={{ fontSize:'11px', color:'#9E8A8E' }}>{wordCount.toLocaleString()} words · ~{estPages} {estPages === 1 ? 'page' : 'pages'}</span>}
               </div>
               {output && (
                 <div style={{ display:'flex', gap:'7px' }}>
