@@ -238,7 +238,7 @@ function buildHybrid(parsed: ParsedCV, pal: Pal): (Paragraph | Table)[] {
       rows: [new TableRow({
         children: [new TableCell({
           width: { size: CONTENT_W, type: WidthType.DXA },
-          shading: { fill: pal.wash, type: ShadingType.CLEAR },
+          shading: { fill: pal.wash, type: ShadingType.SOLID },
           margins: { top: 160, bottom: 160, left: 200, right: 200 },
           borders: { top: { style: BorderStyle.SINGLE, size: 4, color: pal.primary }, bottom: { style: BorderStyle.SINGLE, size: 4, color: pal.primary }, left: NO_BORDER, right: NO_BORDER },
           children: [
@@ -346,7 +346,7 @@ function buildExecutive(parsed: ParsedCV, pal: Pal): (Paragraph | Table)[] {
       children: [
         new TableCell({
           width: { size: SIDEBAR_W, type: WidthType.DXA },
-          shading: { fill: pal.primary, type: ShadingType.CLEAR },
+          shading: { fill: pal.primary, type: ShadingType.SOLID },
           margins: { top: 240, bottom: 240, left: 220, right: 220 },
           verticalAlign: VerticalAlign.TOP,
           borders: NO_BORDERS,
@@ -354,7 +354,7 @@ function buildExecutive(parsed: ParsedCV, pal: Pal): (Paragraph | Table)[] {
         }),
         new TableCell({
           width: { size: MAIN_W, type: WidthType.DXA },
-          shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
+          shading: { fill: 'FFFFFF', type: ShadingType.SOLID },
           margins: { top: 200, bottom: 200, left: 280, right: 160 },
           verticalAlign: VerticalAlign.TOP,
           borders: { ...NO_BORDERS, left: { style: BorderStyle.SINGLE, size: 2, color: pal.accent } },
