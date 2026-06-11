@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     } else if (tool === 'intro90Role') {
       userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || 'Not provided'}`
     } else if (tool === 'deepInterviewPrep') {
-      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || 'Not provided'}\n\nINTERVIEWER NAMES AND TITLES:\n${inputs.interviewers || 'Not provided'}`
+      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || 'Not provided'}\n\nINTERVIEWER DETAILS (names, titles, and LinkedIn URLs where provided):\n${inputs.interviewers || 'Not provided'}\n\nNote: Where LinkedIn URLs are provided for interviewers, use them to inform the background analysis in the Interviewer Background section.`
     }
 
     const anthropic = new Anthropic({ apiKey })

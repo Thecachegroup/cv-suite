@@ -276,7 +276,7 @@ export default function Home() {
   const [interviewers, setInterviewers]   = useState('')
   const [candidateName, setCandidateName] = useState('')
   const [cvFormat, setCvFormat]           = useState<CVFormat>('classic')
-  const [palette, setPalette]             = useState<Palette>('navy')
+  const [palette, setPalette]             = useState<Palette>('burgundy')
   const [coverTone, setCoverTone]         = useState('professional')
   const [length, setLength]               = useState('')
   const [output, setOutput]               = useState('')
@@ -470,7 +470,7 @@ export default function Home() {
 
             {activeTab === 'deepInterviewPrep' && (
               <TextField id="interviewers" label="Interviewer Names & Titles" value={interviewers} onChange={setInterviewers} onClear={()=>setInterviewers('')}
-                placeholder={"e.g.\nSarah Chen — Head of Finance\nMarcus Webb — CFO"} rows={3} />
+                placeholder={"e.g.\nSarah Chen — Head of Finance\nhttps://linkedin.com/in/sarahchen\n\nMarcus Webb — CFO\nhttps://linkedin.com/in/marcuswebb"} rows={5} />
             )}
 
             {/* Divider before options */}

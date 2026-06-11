@@ -424,11 +424,11 @@ Prepared by The Cache Group  |  Confidential
 
 2. INTERVIEWER BACKGROUND
 
-[For each interviewer named, use this format:]
+[For each interviewer named, use this format. If a LinkedIn URL is provided for an interviewer, use it to inform their background — reference their actual career history, current role scope, and any visible areas of focus or expertise. If no LinkedIn is provided, infer from title and label as Assumption:]
 
 **[Name] — [Title]**
 
-[2-3 sentence background: their likely functional lens, career trajectory, what they care about. If limited info, infer from title and label as Assumption:]
+[2-3 sentence background: their career trajectory, functional lens, what they are likely to care about in this hire. Ground in LinkedIn evidence where provided; otherwise infer from title and label as Assumption:]
 
 **Focus Points:**
 - [Specific competency they will probe — with one-line reason why]
