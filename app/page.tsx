@@ -307,7 +307,7 @@ export default function Home() {
   const getInputs = () => {
     switch (activeTab) {
       case 'masterCV':          return { docs }
-      case 'tailoredCV':        return { cv, jd }
+      case 'tailoredCV':        return { cv, jd, role }
       case 'coverLetter':       return { cv, jd, company, role }
       case 'intro90General':    return { cv }
       case 'intro90Role':       return { cv, jd, company }
@@ -360,8 +360,15 @@ export default function Home() {
     setDownloading(true)
     try {
       const tool = TOOLS.find(t => t.id === activeTab)
-      const nameSlug = candidateName.trim() ? `_${candidateName.trim().replace(/\s+/g,'_')}` : ''
-      const filename = `${(tool?.label||'output').replace(/[\s\(\)]/g,'_')}${nameSlug}`
+      const namePart = candidateName.trim().replace(/\s+/g, '_')
+      const rolePart = role.trim().replace(/\s+/g, '_')
+      const filename = namePart && rolePart
+        ? `${namePart}_${rolePart}`
+        : namePart
+          ? namePart
+          : rolePart
+            ? rolePart
+            : (tool?.label||'output').replace(/[\s\(\)]/g, '_')
       const res = await fetch('/api/docx', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ text: output, filename, palette, format: activeTab === "tailoredCV" ? cvFormat : "classic" }) })
       if (!res.ok) throw new Error('Download failed')
@@ -465,7 +472,7 @@ export default function Home() {
               <TextField id="company" label="Company Name" value={company} onChange={setCompany} onClear={()=>setCompany('')} placeholder="e.g. Deloitte" />
             )}
 
-            {activeTab === 'coverLetter' && (
+            {['tailoredCV','coverLetter','intro90Role','deepInterviewPrep'].includes(activeTab) && (
               <TextField id="role" label="Role Title" value={role} onChange={setRole} onClear={()=>setRole('')} placeholder="e.g. Senior Business Analyst" />
             )}
 

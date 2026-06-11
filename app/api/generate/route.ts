@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     if (tool === 'masterCV') {
       userMessage = `CANDIDATE CAREER DOCUMENTS:\n${inputs.docs}`
     } else if (tool === 'tailoredCV') {
-      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}`
+      userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}${inputs.role ? `\n\nTARGET ROLE TITLE: ${inputs.role}` : ''}`
     } else if (tool === 'coverLetter') {
       userMessage = `CANDIDATE CV:\n${inputs.cv}\n\nJOB DESCRIPTION:\n${inputs.jd}\n\nCOMPANY NAME: ${inputs.company || 'Not provided'}\nROLE TITLE: ${inputs.role || 'Not provided'}`
     } else if (tool === 'intro90General') {
