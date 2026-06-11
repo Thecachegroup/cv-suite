@@ -136,6 +136,13 @@ export const PROMPT_EXECUTIVE = (length: string) => `You are a senior recruiter 
 ${CV_RULES}
 ${LENGTH[length] || LENGTH['']}
 
+CRITICAL FORMATTING RULE: You MUST use these EXACT section headings in ALL CAPS — do not rename, reorder, or combine them:
+- EXECUTIVE PROFILE
+- KEY CAREER HIGHLIGHTS
+- CORE COMPETENCIES
+- PROFESSIONAL EXPERIENCE
+- EDUCATION & QUALIFICATIONS
+
 OUTPUT STRUCTURE:
 
 [Candidate Full Name]

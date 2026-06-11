@@ -11,8 +11,8 @@ const PAGE_W = 11906
 const PAGE_H = 16838
 const MARGIN = 720
 const CONTENT_W = PAGE_W - MARGIN * 2  // 10466 DXA
-const SIDEBAR_W = 2900
-const MAIN_W = CONTENT_W - SIDEBAR_W   // 7566 DXA
+const SIDEBAR_W = 3200
+const MAIN_W = CONTENT_W - SIDEBAR_W   // 7266 DXA
 const BULLET_REF = 'cv-bullets'
 const SIDEBAR_BULLET_REF = 'sidebar-bullets'
 
@@ -281,15 +281,25 @@ function buildExecutive(parsed: ParsedCV, pal: Pal): (Paragraph | Table)[] {
   }
 
   // Partition sections into sidebar vs main
-  const SIDEBAR_KEYS = ['COMPETENC', 'SKILL', 'EDUCATION', 'CERTIF', 'TECHNICAL TOOL', 'PLATFORM']
-  const MAIN_KEYS = ['PROFILE', 'HIGHLIGHT', 'EXPERIENCE', 'SUMMARY', 'ALIGNMENT', 'CAREER']
+  // MAIN column: profile, experience, highlights, achievements, summary, alignment
+  // SIDEBAR column: skills, competencies, education, certs, tools
+  // Unmatched sections default to main (safer than hiding in sidebar)
+  const MAIN_KEYS = [
+    'PROFILE', 'HIGHLIGHT', 'EXPERIENCE', 'SUMMARY', 'ALIGNMENT',
+    'CAREER', 'ACHIEVEMENT', 'PROFESSIONAL', 'OBJECTIVE', 'ROLE FIT',
+  ]
+  const SIDEBAR_KEYS = [
+    'COMPETENC', 'SKILL', 'EDUCATION', 'CERTIF', 'TECHNICAL',
+    'PLATFORM', 'TOOL', 'LANGUAGE', 'METHODOLOGY', 'FRAMEWORK',
+  ]
 
-  const sidebarSecs = parsed.sections.filter(s =>
-    SIDEBAR_KEYS.some(k => s.heading.includes(k)) ||
-    !MAIN_KEYS.some(k => s.heading.includes(k))
-  )
   const mainSecs = parsed.sections.filter(s =>
-    MAIN_KEYS.some(k => s.heading.includes(k))
+    MAIN_KEYS.some(k => s.heading.includes(k)) ||
+    (!MAIN_KEYS.some(k => s.heading.includes(k)) && !SIDEBAR_KEYS.some(k => s.heading.includes(k)))
+  )
+  const sidebarSecs = parsed.sections.filter(s =>
+    !MAIN_KEYS.some(k => s.heading.includes(k)) &&
+    SIDEBAR_KEYS.some(k => s.heading.includes(k))
   )
 
   // Build sidebar content
@@ -323,18 +333,6 @@ function buildExecutive(parsed: ParsedCV, pal: Pal): (Paragraph | Table)[] {
       border: { bottom: { color: pal.accent, style: BorderStyle.SINGLE, size: 4 } },
     }))
     mainContent.push(...buildLines(sec.lines, pal, BULLET_REF))
-  }
-
-  // If nothing went to main, put everything in main
-  if (mainContent.length === 0) {
-    for (const sec of parsed.sections) {
-      mainContent.push(new Paragraph({
-        children: [new TextRun({ text: sec.heading, bold: true, size: 22, color: pal.primary, font: 'Calibri' } as IRunOptions)],
-        spacing: { before: 200, after: 80 },
-        border: { bottom: { color: pal.accent, style: BorderStyle.SINGLE, size: 4 } },
-      }))
-      mainContent.push(...buildLines(sec.lines, pal, BULLET_REF))
-    }
   }
 
   // Ensure at least one paragraph in each cell
